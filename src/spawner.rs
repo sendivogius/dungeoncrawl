@@ -29,15 +29,17 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
         1..=8 => goblin(),
         _ => orc()
     };
-    ecs.push((
-        Enemy,
-        pos,
-        Render {
-            color: ColorPair::new(WHITE, BLACK),
-            glyph: glyph,
-        },
-        MovingRandomly,
-        Health { current: hp, max: hp },
-        Name(name))
+    ecs.push(
+        (
+            Enemy,
+            pos,
+            Render {
+                color: ColorPair::new(WHITE, BLACK),
+                glyph: glyph,
+            },
+            MovingRandomly,
+            Health { current: hp, max: hp },
+            Name(name)
+        )
     );
 }

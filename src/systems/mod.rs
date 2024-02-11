@@ -1,7 +1,6 @@
 use crate::prelude::*;
 use std::fmt::Pointer;
 
-mod collisions;
 mod end_turn;
 mod entity_renderer;
 mod map_renderer;
@@ -10,6 +9,7 @@ mod random_move;
 mod movement;
 mod hud;
 mod tooltips;
+mod combat;
 
 pub fn build_monster_scheduler() -> Schedule {
     Schedule::builder()
@@ -20,7 +20,6 @@ pub fn build_monster_scheduler() -> Schedule {
         .add_system(map_renderer::map_render_system())
         .add_system(entity_renderer::entity_render_system())
         .add_system(hud::hud_system())
-        .add_system(tooltips::tooltips_system())
         .add_system(end_turn::end_turn_system())
         .build()
 }
@@ -38,14 +37,13 @@ pub fn build_input_scheduler() -> Schedule {
 
 pub fn build_player_scheduler() -> Schedule {
     Schedule::builder()
-        .add_system(movement::movement_system())
+        .add_system(combat::combat_system())
         .flush()
-        .add_system(collisions::collisions_system())
+        .add_system(movement::movement_system())
         .flush()
         .add_system(map_renderer::map_render_system())
         .add_system(entity_renderer::entity_render_system())
         .add_system(end_turn::end_turn_system())
         .add_system(hud::hud_system())
-        .add_system(tooltips::tooltips_system())
         .build()
 }
