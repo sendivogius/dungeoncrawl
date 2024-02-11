@@ -1,13 +1,10 @@
-use std::ops::Sub;
 use crate::prelude::*;
+use std::ops::Sub;
 
 #[system]
 #[read_component(Point)]
 #[read_component(Render)]
-pub fn entity_render(
-    ecs: &SubWorld,
-    #[resource] camera: &Camera,
-) {
+pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
     let mut draw_batch = DrawBatch::new();
     draw_batch.target(1);
     let offset = Point::new(camera.left_x, camera.top_y);
@@ -20,4 +17,3 @@ pub fn entity_render(
 
     draw_batch.submit(5000).expect("Batch error");
 }
-

@@ -1,18 +1,18 @@
-use std::arch::x86_64::_mulx_u32;
 use crate::prelude::*;
+use std::arch::x86_64::_mulx_u32;
 
-mod map;
-mod map_builder;
 mod camera;
 mod components;
+mod map;
+mod map_builder;
 mod spawner;
 mod systems;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
-    pub use legion::*;
-    pub use legion::world::SubWorld;
     pub use legion::systems::CommandBuffer;
+    pub use legion::world::SubWorld;
+    pub use legion::*;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
@@ -20,10 +20,10 @@ mod prelude {
     pub const DISPLAY_WIDTH: i32 = SCREEN_WIDTH / 2;
     pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT / 2;
 
+    pub use crate::camera::*;
     pub use crate::components::*;
     pub use crate::map::*;
     pub use crate::map_builder::*;
-    pub use crate::camera::*;
     pub use crate::spawner::*;
     pub use crate::systems::*;
 }
@@ -42,7 +42,10 @@ impl State {
         let mut rng = RandomNumberGenerator::new();
         let mb = MapBuilder::new(&mut rng);
         spawn_player(&mut ecs, mb.player_start);
-        mb.rooms.iter().skip(1).map(|r| r.center()).for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
+        mb.rooms
+            .iter()
+            .skip(1)
+            .for_each(|r| spawn_monster(&mut ecs, &mut rng, *r));
         resources.insert(mb.map);
         resources.insert(Camera::new(mb.player_start));
         Self {
