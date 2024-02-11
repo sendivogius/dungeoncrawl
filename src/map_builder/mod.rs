@@ -2,8 +2,10 @@ use crate::map::TileType::Floor;
 use crate::prelude::*;
 
 mod empty;
+mod rooms;
 
 use empty::EmptyArchitect;
+use crate::map_builder::rooms::RoomsArchitect;
 
 const NUM_ROOMS: usize = 20;
 
@@ -72,7 +74,7 @@ impl MapBuilder {
     }
 
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        let mut architect = EmptyArchitect {};
+        let mut architect = RoomsArchitect {};
         architect.new(rng)
     }
     fn apply_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
