@@ -35,7 +35,7 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
             pos,
             Render {
                 color: ColorPair::new(WHITE, BLACK),
-                glyph: glyph,
+                glyph,
             },
             ChasingPlayer {},
             Health { current: hp, max: hp },
