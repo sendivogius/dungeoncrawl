@@ -1,15 +1,11 @@
-use std::cmp::min_by;
 use crate::prelude::*;
+
 use super::MapArchitect;
 
 pub struct CellularAutomataArchitect {}
 
 impl CellularAutomataArchitect {
-    fn random_noise_map(
-        &mut self,
-        rng: &mut RandomNumberGenerator,
-        map: &mut Map,
-    ) {
+    fn random_noise_map(&mut self, rng: &mut RandomNumberGenerator, map: &mut Map) {
         map.tiles.iter_mut().for_each(|t| {
             let roll = rng.range(0, 100);
             if roll > 55 {
@@ -50,16 +46,18 @@ impl CellularAutomataArchitect {
 
     fn find_start(&self, map: &Map) -> Point {
         let center = Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-        let closest_point = map.tiles
+        let closest_point = map
+            .tiles
             .iter()
             .enumerate()
-            .filter(|(_, t)| {
-                **t == TileType::Floor
+            .filter(|(_, t)| **t == TileType::Floor)
+            .map(|(idx, _)| {
+                (
+                    idx,
+                    DistanceAlg::Pythagoras.distance2d(center, map.index_to_point2d(idx)),
+                )
             })
-            .map(|(idx, _)| (idx, DistanceAlg::Pythagoras.distance2d(center, map.index_to_point2d(idx),
-            )))
-            .min_by(|(_, distance), (_, distance2)| distance.partial_cmp(&distance2).unwrap()
-            )
+            .min_by(|(_, distance), (_, distance2)| distance.partial_cmp(distance2).unwrap())
             .map(|(idx, _)| idx)
             .unwrap();
         map.index_to_point2d(closest_point)

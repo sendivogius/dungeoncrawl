@@ -1,17 +1,16 @@
 use crate::prelude::*;
-use std::fmt::Pointer;
 
+mod chasing;
+mod combat;
 mod end_turn;
 mod entity_renderer;
+mod fov;
+mod hud;
 mod map_renderer;
+mod movement;
 mod player_input;
 mod random_move;
-mod movement;
-mod hud;
 mod tooltips;
-mod combat;
-mod chasing;
-mod fov;
 
 pub fn build_monster_scheduler() -> Schedule {
     Schedule::builder()

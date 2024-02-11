@@ -31,28 +31,36 @@ pub fn player_input(
             let mut hit_something = false;
             enemies
                 .iter(ecs)
-                .filter(|(_, pos)| {
-                    **pos == destination
-                })
+                .filter(|(_, pos)| **pos == destination)
                 .for_each(|(entity, _)| {
                     hit_something = true;
                     did_something = true;
-                    commands.push(((), WantsToAttack {
-                        attacker: player_entity,
-                        victim: *entity,
-                    }));
+                    commands.push((
+                        (),
+                        WantsToAttack {
+                            attacker: player_entity,
+                            victim: *entity,
+                        },
+                    ));
                 });
             if !hit_something {
                 did_something = true;
-                commands.push(((), WantsToMove { entity: player_entity, destination }));
+                commands.push((
+                    (),
+                    WantsToMove {
+                        entity: player_entity,
+                        destination,
+                    },
+                ));
             }
         }
 
         if !did_something {
-            if let Ok(mut health) = ecs
+            if let Ok(health) = ecs
                 .entry_mut(player_entity)
                 .unwrap()
-                .get_component_mut::<Health>() {
+                .get_component_mut::<Health>()
+            {
                 health.current = i32::min(health.max, health.current + 1);
             }
         }

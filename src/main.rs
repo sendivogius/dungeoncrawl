@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::arch::x86_64::_mulx_u32;
 
 mod camera;
 mod components;
@@ -11,15 +10,9 @@ mod map_builder;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
+    pub use legion::*;
     pub use legion::systems::CommandBuffer;
     pub use legion::world::SubWorld;
-    pub use legion::*;
-
-    pub const SCREEN_WIDTH: i32 = 80;
-    pub const SCREEN_HEIGHT: i32 = 50;
-
-    pub const DISPLAY_WIDTH: i32 = SCREEN_WIDTH / 2;
-    pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT / 2;
 
     pub use crate::camera::*;
     pub use crate::components::*;
@@ -28,6 +21,12 @@ mod prelude {
     pub use crate::spawner::*;
     pub use crate::systems::*;
     pub use crate::turn_state::*;
+
+    pub const SCREEN_WIDTH: i32 = 80;
+    pub const SCREEN_HEIGHT: i32 = 50;
+
+    pub const DISPLAY_WIDTH: i32 = SCREEN_WIDTH / 2;
+    pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT / 2;
 }
 
 struct State {
@@ -113,7 +112,7 @@ impl GameState for State {
         ctx.set_active_console(0);
         self.resources.insert(Point::from_tuple(ctx.mouse_pos()));
 
-        let current_system = self.resources.get::<TurnState>().unwrap().clone();
+        let current_system = *self.resources.get::<TurnState>().unwrap();
         match current_system {
             TurnState::AwaitingInput => self
                 .input_systems

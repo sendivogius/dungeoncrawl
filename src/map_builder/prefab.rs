@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
-const FORTRESS: (&str, i32, i32) = ("
+const FORTRESS: (&str, i32, i32) = (
+    "
 ------------
 ---######---
 ---#----#---
@@ -11,12 +12,20 @@ const FORTRESS: (&str, i32, i32) = ("
 ---#----#---
 ---#----#---
 ---######---
-------------", 12, 11);
+------------",
+    12,
+    11,
+);
 
 pub fn apply_prefab(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
     let mut placement = None;
-    let dijkstra_map = DijkstraMap::new(SCREEN_WIDTH, SCREEN_HEIGHT,
-                                        &vec![mb.map.point2d_to_index(mb.player_start)], &mb.map, 1024.0);
+    let dijkstra_map = DijkstraMap::new(
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        &[mb.map.point2d_to_index(mb.player_start)],
+        &mb.map,
+        1024.0,
+    );
 
     let mut attemps = 0;
     while placement.is_none() && attemps < 10 {
@@ -44,8 +53,10 @@ pub fn apply_prefab(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
 
     if let Some(placement) = placement {
         println!("Placed {}, {}", placement.x, placement.y);
-        let string_vec: Vec<char> = FORTRESS.0
-            .chars().filter(|a| *a != '\r' && *a != '\n')
+        let string_vec: Vec<char> = FORTRESS
+            .0
+            .chars()
+            .filter(|a| *a != '\r' && *a != '\n')
             .collect();
         let mut i = 0;
         for ty in placement.y..placement.y + FORTRESS.2 {
@@ -59,7 +70,7 @@ pub fn apply_prefab(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
                     }
                     '-' => mb.map.tiles[idx] = TileType::Floor,
                     '#' => mb.map.tiles[idx] = TileType::Wall,
-                    _ => println!("No idea what to do with [{}]", c)
+                    _ => println!("No idea what to do with [{}]", c),
                 }
                 i += 1;
             }

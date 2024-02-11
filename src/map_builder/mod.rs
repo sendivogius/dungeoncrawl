@@ -1,16 +1,14 @@
-use crate::map::TileType::Floor;
 use crate::map_builder::automata::CellularAutomataArchitect;
 use crate::map_builder::drunkard::DrunkardArchitect;
-use crate::map_builder::empty::EmptyArchitect;
 use crate::map_builder::prefab::apply_prefab;
 use crate::map_builder::rooms::RoomsArchitect;
 use crate::prelude::*;
 
-mod empty;
-mod rooms;
 mod automata;
 mod drunkard;
+mod empty;
 mod prefab;
+mod rooms;
 
 const NUM_ROOMS: usize = 20;
 
@@ -34,19 +32,20 @@ impl MapBuilder {
         let dijkstra_map = DijkstraMap::new(
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
-            &vec![self.map.point2d_to_index(self.player_start)],
+            &[self.map.point2d_to_index(self.player_start)],
             &self.map,
             1024.0,
         );
         const UNREACHABLE: &f32 = &f32::MAX;
-        self.map.index_to_point2d
-        (
-            dijkstra_map.map
+        self.map.index_to_point2d(
+            dijkstra_map
+                .map
                 .iter()
                 .enumerate()
                 .filter(|(_, dist)| *dist < UNREACHABLE)
                 .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-                .unwrap().0
+                .unwrap()
+                .0,
         )
     }
 
@@ -70,7 +69,7 @@ impl MapBuilder {
                 room.for_each(|p| {
                     if p.x > 0 && p.x < SCREEN_WIDTH && p.y > 0 && p.y < SCREEN_HEIGHT {
                         let idx = map_idx(p.x, p.y);
-                        self.map.tiles[idx] = Floor;
+                        self.map.tiles[idx] = TileType::Floor;
                     }
                 });
                 self.rooms.push(room);
@@ -82,7 +81,7 @@ impl MapBuilder {
         let mut architect: Box<dyn MapArchitect> = match rng.range(0, 3) {
             0 => Box::new(DrunkardArchitect {}),
             1 => Box::new(RoomsArchitect {}),
-            _ => Box::new(CellularAutomataArchitect {})
+            _ => Box::new(CellularAutomataArchitect {}),
         };
         let mut mb = architect.new(rng);
         apply_prefab(&mut mb, rng);
@@ -92,7 +91,7 @@ impl MapBuilder {
         use std::cmp::{max, min};
         for x in min(x1, x2)..=max(x1, x2) {
             if let Some(idx) = self.map.try_index(Point::new(x, y)) {
-                self.map.tiles[idx as usize] = Floor;
+                self.map.tiles[idx] = TileType::Floor;
             }
         }
     }
@@ -101,7 +100,7 @@ impl MapBuilder {
         use std::cmp::{max, min};
         for y in min(y1, y2)..=max(y1, y2) {
             if let Some(idx) = self.map.try_index(Point::new(x, y)) {
-                self.map.tiles[idx as usize] = TileType::Floor;
+                self.map.tiles[idx] = TileType::Floor;
             }
         }
     }
@@ -122,24 +121,24 @@ impl MapBuilder {
         }
     }
 
-    fn spawn_monsters(
-        &self,
-        start: &Point,
-        rng: &mut RandomNumberGenerator,
-    ) -> Vec<Point> {
+    fn spawn_monsters(&self, start: &Point, rng: &mut RandomNumberGenerator) -> Vec<Point> {
         const NUM_MONSTERS: usize = 50;
-        let mut spawnable_tiles: Vec<Point> = self.map.tiles
+        let mut spawnable_tiles: Vec<Point> = self
+            .map
+            .tiles
             .iter()
             .enumerate()
-            .filter(|(idx, t)|
-                **t == TileType::Floor && DistanceAlg::Pythagoras.distance2d(*start, self.map.index_to_point2d(*idx)) > 10.0
-            )
+            .filter(|(idx, t)| {
+                **t == TileType::Floor
+                    && DistanceAlg::Pythagoras.distance2d(*start, self.map.index_to_point2d(*idx))
+                        > 10.0
+            })
             .map(|(idx, _)| self.map.index_to_point2d(idx))
             .collect();
         let mut spawns = Vec::new();
         for _ in 0..NUM_MONSTERS {
             let target_idx = rng.random_slice_index(&spawnable_tiles).unwrap();
-            spawns.push(spawnable_tiles[target_idx].clone());
+            spawns.push(spawnable_tiles[target_idx]);
             spawnable_tiles.remove(target_idx);
         }
         spawns

@@ -1,5 +1,5 @@
-use std::cmp::min_by;
 use crate::prelude::*;
+
 use super::MapArchitect;
 
 const STAGGER_DISTANCE: usize = 400;
@@ -9,22 +9,17 @@ const DESIRED_FLOOR: usize = NUM_TILES / 3;
 pub struct DrunkardArchitect {}
 
 impl DrunkardArchitect {
-    fn drunkard(
-        &mut self,
-        start: &Point,
-        rng: &mut RandomNumberGenerator,
-        map: &mut Map,
-    ) {
-        let mut drunkard_pos = start.clone();
+    fn drunkard(&mut self, start: &Point, rng: &mut RandomNumberGenerator, map: &mut Map) {
+        let mut drunkard_pos = *start;
         let mut distance_staggered = 0;
         loop {
-            let mut drunk_idx = map.point2d_to_index(drunkard_pos);
+            let drunk_idx = map.point2d_to_index(drunkard_pos);
             map.tiles[drunk_idx] = TileType::Floor;
             match rng.range(0, 4) {
                 0 => drunkard_pos.x -= 1,
                 1 => drunkard_pos.x += 1,
                 2 => drunkard_pos.y -= 1,
-                _ => drunkard_pos.y += 1
+                _ => drunkard_pos.y += 1,
             }
             if !map.in_bounds(drunkard_pos) {
                 break;
@@ -49,23 +44,28 @@ impl MapArchitect for DrunkardArchitect {
         mb.fill(TileType::Wall);
         let center = Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
         self.drunkard(&center, rng, &mut mb.map);
-        while mb.map.tiles.iter().filter(|t| **t == TileType::Floor).count() < DESIRED_FLOOR {
+        while mb
+            .map
+            .tiles
+            .iter()
+            .filter(|t| **t == TileType::Floor)
+            .count()
+            < DESIRED_FLOOR
+        {
             self.drunkard(
-                &Point::new(
-                    rng.range(0, SCREEN_WIDTH),
-                    rng.range(0, SCREEN_HEIGHT),
-                ),
+                &Point::new(rng.range(0, SCREEN_WIDTH), rng.range(0, SCREEN_HEIGHT)),
                 rng,
                 &mut mb.map,
             );
             let dijkstra_map = DijkstraMap::new(
                 SCREEN_WIDTH,
                 SCREEN_HEIGHT,
-                &vec![mb.map.point2d_to_index(center)],
+                &[mb.map.point2d_to_index(center)],
                 &mb.map,
                 1024.0,
             );
-            dijkstra_map.map
+            dijkstra_map
+                .map
                 .iter()
                 .enumerate()
                 .filter(|(_, distance)| *distance > &2000.0)
