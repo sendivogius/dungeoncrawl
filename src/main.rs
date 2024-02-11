@@ -3,16 +3,16 @@ use crate::prelude::*;
 mod camera;
 mod components;
 mod map;
+mod map_builder;
 mod spawner;
 mod systems;
 mod turn_state;
-mod map_builder;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
-    pub use legion::*;
     pub use legion::systems::CommandBuffer;
     pub use legion::world::SubWorld;
+    pub use legion::*;
 
     pub use crate::camera::*;
     pub use crate::components::*;
@@ -41,7 +41,6 @@ impl State {
     fn new() -> Self {
         let mut ecs = World::default();
         let mut resources = Resources::default();
-
         let mut rng = RandomNumberGenerator::new();
         let mb = MapBuilder::new(&mut rng);
         spawn_player(&mut ecs, mb.player_start);
@@ -52,6 +51,7 @@ impl State {
         resources.insert(mb.map);
         resources.insert(Camera::new(mb.player_start));
         resources.insert(TurnState::AwaitingInput);
+        resources.insert(mb.theme);
         Self {
             ecs,
             resources,
@@ -64,9 +64,24 @@ impl State {
     fn game_over(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(2);
         ctx.print_color_centered(2, RED, BLACK, "Your quest has ended.");
-        ctx.print_color_centered(4, WHITE, BLACK, "Slain by a monster, your hero's journey has come to a premature end.");
-        ctx.print_color_centered(5, WHITE, BLACK, "The amulet of yoda remains unclaimed, and your home town is not saved.");
-        ctx.print_color_centered(8, YELLOW, BLACK, "Don't worry, you can always try again with a new hero.");
+        ctx.print_color_centered(
+            4,
+            WHITE,
+            BLACK,
+            "Slain by a monster, your hero's journey has come to a premature end.",
+        );
+        ctx.print_color_centered(
+            5,
+            WHITE,
+            BLACK,
+            "The amulet of yoda remains unclaimed, and your home town is not saved.",
+        );
+        ctx.print_color_centered(
+            8,
+            YELLOW,
+            BLACK,
+            "Don't worry, you can always try again with a new hero.",
+        );
         ctx.print_color_centered(9, GREEN, BLACK, "Press 1 to start again.");
 
         if let Some(VirtualKeyCode::Key1) = ctx.key {
@@ -77,8 +92,18 @@ impl State {
     fn victory(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(2);
         ctx.print_color_centered(2, GREEN, BLACK, "Your have won.");
-        ctx.print_color_centered(4, WHITE, BLACK, "You put on the Amulet of Yala and feel ts power course through your veins.");
-        ctx.print_color_centered(5, WHITE, BLACK, "Your town is saved, and you can return to your normal life.");
+        ctx.print_color_centered(
+            4,
+            WHITE,
+            BLACK,
+            "You put on the Amulet of Yala and feel ts power course through your veins.",
+        );
+        ctx.print_color_centered(
+            5,
+            WHITE,
+            BLACK,
+            "Your town is saved, and you can return to your normal life.",
+        );
         ctx.print_color_centered(7, GREEN, BLACK, "Press 1 to play again");
 
         if let Some(VirtualKeyCode::Key1) = ctx.key {
@@ -93,10 +118,16 @@ impl State {
         let map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut self.ecs, map_builder.player_start);
         spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
-        map_builder.rooms.iter().skip(1).map(|r| r.center()).for_each(|pos| spawn_monster(&mut self.ecs, &mut rng, pos));
+        map_builder
+            .rooms
+            .iter()
+            .skip(1)
+            .map(|r| r.center())
+            .for_each(|pos| spawn_monster(&mut self.ecs, &mut rng, pos));
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
+        self.resources.insert(map_builder.theme);
     }
 }
 
@@ -124,7 +155,7 @@ impl GameState for State {
                 .monster_systems
                 .execute(&mut self.ecs, &mut self.resources),
             TurnState::GameOver => self.game_over(ctx),
-            TurnState::Victory => self.victory(ctx)
+            TurnState::Victory => self.victory(ctx),
         }
 
         render_draw_buffer(ctx).expect("Render error");
