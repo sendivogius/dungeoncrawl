@@ -42,6 +42,7 @@ impl State {
         let mut rng = RandomNumberGenerator::new();
         let mb = MapBuilder::new(&mut rng);
         spawn_player(&mut ecs, mb.player_start);
+        mb.rooms.iter().skip(1).map(|r| r.center()).for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
         resources.insert(mb.map);
         resources.insert(Camera::new(mb.player_start));
         Self {
