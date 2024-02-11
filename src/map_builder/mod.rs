@@ -1,13 +1,16 @@
 use crate::map::TileType::Floor;
+use crate::map_builder::automata::CellularAutomataArchitect;
+use crate::map_builder::drunkard::DrunkardArchitect;
+use crate::map_builder::empty::EmptyArchitect;
+use crate::map_builder::prefab::apply_prefab;
+use crate::map_builder::rooms::RoomsArchitect;
 use crate::prelude::*;
 
 mod empty;
 mod rooms;
 mod automata;
-
-use empty::EmptyArchitect;
-use crate::map_builder::automata::CellularAutomataArchitect;
-use crate::map_builder::rooms::RoomsArchitect;
+mod drunkard;
+mod prefab;
 
 const NUM_ROOMS: usize = 20;
 
@@ -76,8 +79,14 @@ impl MapBuilder {
     }
 
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        let mut architect = CellularAutomataArchitect {};
-        architect.new(rng)
+        let mut architect: Box<dyn MapArchitect> = match rng.range(0, 3) {
+            0 => Box::new(DrunkardArchitect {}),
+            1 => Box::new(RoomsArchitect {}),
+            _ => Box::new(CellularAutomataArchitect {})
+        };
+        let mut mb = architect.new(rng);
+        apply_prefab(&mut mb, rng);
+        mb
     }
     fn apply_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
         use std::cmp::{max, min};
@@ -122,7 +131,7 @@ impl MapBuilder {
         let mut spawnable_tiles: Vec<Point> = self.map.tiles
             .iter()
             .enumerate()
-            .filter(|(idx, t)   |
+            .filter(|(idx, t)|
                 **t == TileType::Floor && DistanceAlg::Pythagoras.distance2d(*start, self.map.index_to_point2d(*idx)) > 10.0
             )
             .map(|(idx, _)| self.map.index_to_point2d(idx))
